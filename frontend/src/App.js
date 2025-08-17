@@ -1,61 +1,122 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion'; // For animations (npm install framer-motion)
 import axios from 'axios';
 import './App.css'; // Your styles
 
-const API_URL = 'https://autoforgx-backend.onrender.com/api'; // Or use process.env.REACT_APP_API_URL
+const API_URL = 'https://autoforgx-backend.onrender.com/api';
 
-// Hero Component for Home Page
-const Hero = () => (
-  <section className="hero">
-    <h1>Welcome to AutoForgX</h1>
-    <p>Your premier platform for professional online courses. Unlock your potential with expert-led learning.</p>
-    <Link to="/courses" className="cta-button">Explore Courses</Link>
-  </section>
-);
-
-// Featured Courses Component (for Home)
-const FeaturedCourses = ({ courses }) => (
-  <section className="featured-courses">
-    <h2>Featured Courses</h2>
-    <div className="course-grid">
-      {courses.slice(0, 3).map(course => (
-        <div key={course._id} className="course-card">
-          <h3>{course.title}</h3>
-          <p>{course.description}</p>
-          <p className="price">${course.price}</p>
-          <button>Learn More</button>
-        </div>
-      ))}
-    </div>
-  </section>
-);
-
-// Testimonials Component (for Home)
-const Testimonials = () => (
-  <section className="testimonials">
-    <h2>What Our Students Say</h2>
-    <div className="testimonial-grid">
-      <div className="testimonial-card">"Amazing courses! Transformed my career." - Alex</div>
-      <div className="testimonial-card">"User-friendly platform with top-notch content." - Jordan</div>
-    </div>
-  </section>
-);
-
-// Home Page
+// Home Component (your provided code, cleaned up)
 const Home = () => {
   const [courses, setCourses] = useState([]);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
 
   useEffect(() => {
     axios.get(`${API_URL}/courses`).then(res => setCourses(res.data));
+
+    // Auto-rotate testimonials
+    const interval = setInterval(() => {
+      setTestimonialIndex((prev) => (prev + 1) % testimonials.length);
+    }, 5000); // Change every 5 seconds
+    return () => clearInterval(interval);
   }, []);
 
+  const testimonials = [
+    { quote: "Transformed my career with top-notch courses!", author: "Alex Johnson" },
+    { quote: "User-friendly and packed with valuable content.", author: "Jordan Lee" },
+    { quote: "Best investment in my professional growth.", author: "Taylor Smith" },
+  ];
+
+  const benefits = [
+    { title: "Expert Instructors", description: "Learn from industry leaders.", icon: "👨‍🏫" },
+    { title: "Flexible Learning", description: "Study at your own pace.", icon: "⏰" },
+    { title: "Certified Courses", description: "Earn recognized certificates.", icon: "🏆" },
+    { title: "Community Support", description: "Join discussions and forums.", icon: "🤝" },
+  ];
+
   return (
-    <div className="home-page">
-      <Hero />
-      <FeaturedCourses courses={courses} />
-      <Testimonials />
-      <Link to="/signup" className="cta-button secondary">Get Started Today</Link>
+    <div className="home-container">
+      {/* Hero Section */}
+      <motion.section
+        className="hero-section"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1 }}
+      >
+        <h1>Unlock Your Potential with AutoForgX</h1>
+        <p>Elevate your skills through expert-led online courses designed for professionals like you.</p>
+        <Link to="/courses" className="cta-button">Browse Courses</Link>
+      </motion.section>
+
+      {/* Why Choose Us Section */}
+      <section className="benefits-section">
+        <h2>Why Choose AutoForgX?</h2>
+        <div className="benefits-grid">
+          {benefits.map((benefit, index) => (
+            <motion.div
+              key={index}
+              className="benefit-card"
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: index * 0.2 }}
+            >
+              <span className="benefit-icon">{benefit.icon}</span>
+              <h3>{benefit.title}</h3>
+              <p>{benefit.description}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Featured Courses Section */}
+      <section className="featured-courses-section">
+        <h2>Featured Courses</h2>
+        <div className="courses-grid">
+          {courses.slice(0, 4).map((course) => (
+            <motion.div
+              key={course._id}
+              className="course-card"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.3 }}
+            >
+              <h3>{course.title}</h3>
+              <p>{course.description}</p>
+              <span className="course-price">${course.price}</span>
+              <Link to="/courses" className="course-button">Enroll Now</Link>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="testimonials-section">
+        <h2>What Our Students Say</h2>
+        <motion.div
+          className="testimonial-card"
+          key={testimonialIndex}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <p>"{testimonials[testimonialIndex].quote}"</p>
+          <span>- {testimonials[testimonialIndex].author}</span>
+        </motion.div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="cta-section">
+        <h2>Ready to Start Learning?</h2>
+        <p>Join thousands of professionals advancing their careers.</p>
+        <Link to="/signup" className="cta-button">Sign Up Free</Link>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <p>&copy; 2025 AutoForgX. All rights reserved.</p>
+        <div className="footer-links">
+          <Link to="/privacy">Privacy Policy</Link> | <Link to="/terms">Terms of Service</Link>
+        </div>
+      </footer>
     </div>
   );
 };
@@ -201,14 +262,14 @@ const Dashboard = () => {
 };
 
 // Main App Component
-const App = () => {
+function App() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/';
   };
 
   return (
-    <Router>
+    <>
       <nav className="navbar">
         <Link to="/">Home</Link>
         <Link to="/courses">Courses</Link>
@@ -231,8 +292,8 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
-    </Router>
+    </>
   );
-};
+}
 
 export default App;
